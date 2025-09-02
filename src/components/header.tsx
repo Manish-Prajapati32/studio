@@ -1,4 +1,8 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { motion } from "framer-motion";
 import {
   Avatar,
   AvatarFallback,
@@ -13,23 +17,93 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Logo } from "@/components/logo";
-import { PanelLeft } from "lucide-react";
+import {
+  Archive,
+  Bot,
+  Globe,
+  Home,
+  Languages,
+  Map,
+  Menu,
+} from "lucide-react";
+import {
+  Sheet,
+  SheetContent,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import { cn } from "@/lib/utils";
+
+const navItems = [
+  { href: "/dashboard", label: "Dashboard", icon: Home },
+  { href: "/virtual-tours", label: "Virtual Tours", icon: Globe },
+  { href: "/interactive-map", label: "Interactive Map", icon: Map },
+  { href: "/digital-archives", label: "Digital Archives", icon: Archive },
+  { href: "/tour-planner", label: "AI Tour Planner", icon: Bot },
+  { href: "/audio-guide", label: "Audio Guide", icon: Languages },
+];
 
 export function Header() {
-  return (
-    <header className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b bg-background/80 px-4 backdrop-blur-sm md:px-6">
-      <div className="md:hidden">
-        <SidebarTrigger asChild>
-          <Button variant="ghost" size="icon" className="rounded-full">
-            <PanelLeft />
-            <span className="sr-only">Toggle Sidebar</span>
-          </Button>
-        </SidebarTrigger>
-      </div>
+  const pathname = usePathname();
 
-      <div className="flex w-full items-center justify-end gap-4">
+  return (
+    <header className="sticky top-0 z-50 flex h-20 items-center justify-between border-b bg-background/80 px-4 backdrop-blur-sm md:px-6">
+      <Link href="/dashboard" className="flex items-center gap-3">
+        <Logo className="size-8 text-primary" />
+        <h2 className="font-headline text-xl font-semibold tracking-tight">
+          Sikkim Serenity
+        </h2>
+      </Link>
+
+      <nav className="hidden items-center gap-1 md:flex">
+        {navItems.map((item) => (
+          <Link
+            key={item.href}
+            href={item.href}
+            className={cn(
+              "relative rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground",
+              pathname === item.href ? "text-primary" : "text-muted-foreground"
+            )}
+          >
+            {item.label}
+            {pathname === item.href && (
+              <motion.span
+                layoutId="underline"
+                className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary"
+              />
+            )}
+          </Link>
+        ))}
+      </nav>
+      
+      <div className="flex items-center gap-4">
+         <div className="md:hidden">
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon">
+                  <Menu />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="right">
+                <nav className="mt-8 flex flex-col gap-4">
+                {navItems.map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={cn(
+                      "flex items-center gap-3 rounded-md p-2 text-lg font-medium",
+                       pathname === item.href ? "bg-accent text-accent-foreground" : "text-muted-foreground"
+                    )}
+                  >
+                    <item.icon className="size-5" />
+                    {item.label}
+                  </Link>
+                ))}
+                </nav>
+              </SheetContent>
+            </Sheet>
+          </div>
+
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
