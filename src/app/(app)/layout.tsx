@@ -7,10 +7,8 @@ import {
   SidebarContent,
   SidebarFooter,
   SidebarInset,
-  SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
-import { Button } from "@/components/ui/button";
 import { MainNav } from "@/components/main-nav";
 import { Header } from "@/components/header";
 import { Logo } from "@/components/logo";
