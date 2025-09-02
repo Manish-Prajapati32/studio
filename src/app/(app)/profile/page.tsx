@@ -35,6 +35,7 @@ import {
   SuggestUserPreferencesOutput,
 } from "@/ai/flows/suggest-user-preferences";
 import { Skeleton } from "@/components/ui/skeleton";
+import Link from "next/link";
 
 const profileSchema = z.object({
   name: z.string().min(1, "Name is required."),
@@ -93,7 +94,6 @@ export default function UserProfilePage() {
       } else {
         setUser(null);
         setUserProfile(null);
-        // Optionally redirect to login page
       }
       setIsLoading(false);
     });
@@ -188,6 +188,9 @@ export default function UserProfilePage() {
     return (
       <div className="container mx-auto max-w-2xl text-center">
          <PageHeader title="Access Denied" description="Please sign in to view your profile." />
+         <Button asChild className="mt-4">
+            <Link href="/login">Sign In</Link>
+         </Button>
       </div>
     );
   }
