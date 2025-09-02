@@ -26,6 +26,9 @@ import {
   Languages,
   Map,
   Menu,
+  LogOut,
+  User,
+  Settings,
 } from "lucide-react";
 import {
   Sheet,
@@ -126,10 +129,16 @@ export function Header() {
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>Profile</DropdownMenuItem>
-            <DropdownMenuItem>Settings</DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link href="/profile"><User className="mr-2"/>Profile</Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link href="/settings"><Settings className="mr-2"/>Settings</Link>
+            </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>Log out</DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link href="/logout"><LogOut className="mr-2"/>Log out</Link>
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
