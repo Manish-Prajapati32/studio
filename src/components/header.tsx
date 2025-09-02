@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -26,7 +27,6 @@ import {
   Languages,
   Map,
   Menu,
-  LogOut,
   User,
   Settings,
 } from "lucide-react";
@@ -122,9 +122,9 @@ export function Header() {
           <DropdownMenuContent className="w-56" align="end" forceMount>
             <DropdownMenuLabel className="font-normal">
               <div className="flex flex-col space-y-1">
-                <p className="text-sm font-medium leading-none">Visitor</p>
+                <p className="text-sm font-medium leading-none">Sikkim Explorer</p>
                 <p className="text-xs leading-none text-muted-foreground">
-                  visitor@example.com
+                  demo@sikkimserenity.com
                 </p>
               </div>
             </DropdownMenuLabel>
@@ -134,10 +134,6 @@ export function Header() {
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
               <Link href="/settings"><Settings className="mr-2"/>Settings</Link>
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem asChild>
-              <Link href="/logout"><LogOut className="mr-2"/>Log out</Link>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

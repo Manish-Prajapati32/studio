@@ -1,14 +1,8 @@
 
 "use client";
 
-import { useState, useEffect, useTransition } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { doc, getDoc, setDoc, deleteDoc } from "firebase/firestore";
-import { getAuth, onAuthStateChanged, User, signOut, deleteUser } from "firebase/auth";
-import { db, app } from "@/lib/firebase";
-import { Loader2, Save, Search, User as UserIcon } from "lucide-react";
+import { useState } from "react";
+import { Loader2, Save, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -18,18 +12,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { useToast } from "@/hooks/use-toast";
-import { Skeleton } from "@/components/ui/skeleton";
-import Link from "next/link";
 import { BookingChart } from "@/components/booking-chart";
 import {
   Avatar,
@@ -42,7 +25,6 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs";
-import { useRouter } from "next/navigation";
 import { BookingListItem } from "@/components/booking-list-item";
 import {
   AlertDialog,
@@ -55,6 +37,11 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+
 
 const profileSchema = z.object({
   name: z.string().min(1, "Name is required."),
@@ -65,12 +52,14 @@ const profileSchema = z.object({
 
 type ProfileFormValues = z.infer<typeof profileSchema>;
 
-interface UserProfile {
-  name: string;
-  email: string;
-  phone?: string;
-  address?: string;
-}
+
+const staticUserProfile = {
+  name: "Sikkim Explorer",
+  email: "demo@sikkimserenity.com",
+  phone: "123-456-7890",
+  address: "Gangtok, Sikkim",
+};
+
 
 const bookings = [
     {
@@ -98,125 +87,18 @@ const bookings = [
 
 
 export default function UserProfilePage() {
-  const { toast } = useToast();
-  const router = useRouter();
-  const [user, setUser] = useState<User | null>(null);
-  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isSaving, setIsSaving] = useTransition();
+  const [userProfile, setUserProfile] = useState(staticUserProfile);
 
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
-    defaultValues: {
-      name: "",
-      email: "",
-      phone: "",
-      address: "",
-    },
+    defaultValues: userProfile,
   });
 
-  useEffect(() => {
-    const auth = getAuth(app);
-    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-      if (currentUser) {
-        setUser(currentUser);
-        const docRef = doc(db, "users", currentUser.uid);
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists()) {
-          const profile = docSnap.data() as UserProfile;
-          setUserProfile(profile);
-          form.reset(profile);
-        } else {
-          // If no profile exists, create one from auth details
-          const profile = {
-            name: currentUser.displayName || "New User",
-            email: currentUser.email || "",
-            phone: currentUser.phoneNumber || "",
-            address: "karnataka, india" // default value
-          };
-          setUserProfile(profile);
-          form.reset(profile);
-          // Optionally, save this new profile to Firestore
-          await setDoc(doc(db, "users", currentUser.uid), profile);
-        }
-      } else {
-        router.push("/login");
-      }
-      setIsLoading(false);
-    });
-    return () => unsubscribe();
-  }, [form, router]);
-  
-  const handleLogout = async () => {
-    const auth = getAuth(app);
-    try {
-      await signOut(auth);
-      toast({ title: "Logged Out", description: "You have been successfully logged out." });
-      router.push("/login");
-    } catch (error) {
-      toast({ title: "Error", description: "Failed to log out. Please try again.", variant: "destructive" });
-    }
-  };
-  
-  const handleDeleteAccount = async () => {
-    if (!user) return;
-    const auth = getAuth(app);
-    const currentUser = auth.currentUser;
-    if (!currentUser) return;
-    
-    try {
-      // First delete Firestore document
-      await deleteDoc(doc(db, "users", currentUser.uid));
-      // Then delete the user
-      await deleteUser(currentUser);
-      
-      toast({ title: "Account Deleted", description: "Your account has been permanently deleted." });
-      router.push("/signup");
-    } catch (error: any) {
-      console.error("Error deleting account:", error);
-      toast({ title: "Error", description: `Failed to delete account: ${error.message}`, variant: "destructive" });
-    }
-  };
-
-
   const onSubmit = async (values: ProfileFormValues) => {
-    if (!user) return;
-
-    setIsSaving(async () => {
-      try {
-        await setDoc(doc(db, "users", user.uid), values, { merge: true });
-        setUserProfile(values);
-        form.reset(values); // This resets the 'dirty' state
-        toast({
-          title: "Success",
-          description: "Your profile has been saved.",
-        });
-      } catch (error) {
-        toast({
-          title: "Error",
-          description: "Failed to save your profile. Please try again.",
-          variant: "destructive",
-        });
-      }
-    });
+    // In a real app, you'd save this. Here we just update the state.
+    setUserProfile(values);
+    form.reset(values);
   };
-
-  if (isLoading) {
-    return (
-      <div className="container mx-auto p-4">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-            <div className="col-span-1 flex flex-col gap-4">
-                <Skeleton className="h-64 w-full" />
-                <Skeleton className="h-48 w-full" />
-            </div>
-            <div className="col-span-3">
-                 <Skeleton className="h-[500px] w-full" />
-            </div>
-        </div>
-      </div>
-    );
-  }
-
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 p-4">
@@ -224,14 +106,13 @@ export default function UserProfilePage() {
         <Card>
           <CardContent className="p-4">
             <Avatar className="w-full h-auto rounded-lg mb-4 aspect-square">
-              <AvatarImage src="https://picsum.photos/300/300" alt={userProfile?.name} />
-              <AvatarFallback>{userProfile?.name?.charAt(0) ?? 'U'}</AvatarFallback>
+              <AvatarImage src="https://picsum.photos/300/300" alt={userProfile.name} />
+              <AvatarFallback>{userProfile.name.charAt(0) ?? 'U'}</AvatarFallback>
             </Avatar>
             <div className="text-center">
               <p className="font-semibold text-lg">Details</p>
               <hr className="my-2"/>
-              <div className="flex justify-between gap-2">
-                <Button variant="destructive" onClick={handleLogout}>Log-out</Button>
+              <div className="flex justify-center gap-2">
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
                     <Button variant="outline">Edit Profile</Button>
@@ -265,7 +146,7 @@ export default function UserProfilePage() {
                             <FormItem>
                               <FormLabel>Email</FormLabel>
                               <FormControl>
-                                <Input type="email" placeholder="Your email address" {...field} readOnly />
+                                <Input type="email" placeholder="Your email address" {...field} />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -299,12 +180,8 @@ export default function UserProfilePage() {
                         />
                          <AlertDialogFooter>
                           <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <Button type="submit" disabled={!form.formState.isDirty || isSaving}>
-                            {isSaving ? (
-                              <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Saving...</>
-                            ) : (
-                              <><Save className="mr-2 h-4 w-4" />Save Changes</>
-                            )}
+                          <Button type="submit" disabled={!form.formState.isDirty}>
+                              <Save className="mr-2 h-4 w-4" />Save Changes
                           </Button>
                         </AlertDialogFooter>
                       </form>
@@ -317,29 +194,10 @@ export default function UserProfilePage() {
         </Card>
         <Card>
             <CardContent className="p-4">
-                <h3 className="text-xl font-bold">Hi {userProfile?.name}!</h3>
-                <p className="text-sm text-muted-foreground truncate">Email: {userProfile?.email}</p>
-                <p className="text-sm text-muted-foreground">Phone: {userProfile?.phone || 'N/A'}</p>
-                <p className="text-sm text-muted-foreground">Address: {userProfile?.address || 'N/A'}</p>
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button variant="link" className="text-destructive p-0 h-auto mt-4">Delete account</Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        This action cannot be undone. This will permanently delete your account and remove your data from our servers.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction onClick={handleDeleteAccount} className="bg-destructive hover:bg-destructive/90">
-                        Delete Account
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
+                <h3 className="text-xl font-bold">Hi {userProfile.name}!</h3>
+                <p className="text-sm text-muted-foreground truncate">Email: {userProfile.email}</p>
+                <p className="text-sm text-muted-foreground">Phone: {userProfile.phone || 'N/A'}</p>
+                <p className="text-sm text-muted-foreground">Address: {userProfile.address || 'N/A'}</p>
             </CardContent>
         </Card>
       </div>
