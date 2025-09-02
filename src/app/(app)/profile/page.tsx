@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -35,26 +36,30 @@ const profileFormSchema = z.object({
 
 type ProfileFormValues = z.infer<typeof profileFormSchema>;
 
+const initialProfileData: ProfileFormValues = {
+  name: "Visitor",
+  email: "visitor@example.com",
+  bio: "Eager to explore the serene monasteries of Sikkim and capture its beauty.",
+  preferences: "Historical sites, authentic local food, and nature photography.",
+};
+
 export default function ProfilePage() {
   const { toast } = useToast();
+  const [profileData, setProfileData] = useState(initialProfileData);
 
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileFormSchema),
-    defaultValues: {
-      name: "Visitor",
-      email: "visitor@example.com",
-      bio: "Eager to explore the serene monasteries of Sikkim and capture its beauty.",
-      preferences: "Historical sites, authentic local food, and nature photography.",
-    },
+    defaultValues: profileData,
     mode: "onChange",
   });
 
   function onSubmit(data: ProfileFormValues) {
+    setProfileData(data);
+    form.reset(data);
     toast({
       title: "Profile Updated",
       description: "Your profile information has been saved successfully.",
     });
-    console.log(data);
   }
 
   return (
@@ -71,7 +76,7 @@ export default function ProfilePage() {
                 <div className="relative">
                   <Avatar className="size-24">
                     <AvatarImage src="https://picsum.photos/100" alt="User" />
-                    <AvatarFallback>U</AvatarFallback>
+                    <AvatarFallback>{profileData.name.charAt(0)}</AvatarFallback>
                   </Avatar>
                   <Button
                     type="button"
