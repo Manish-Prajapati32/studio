@@ -1,8 +1,14 @@
+
 "use client";
 
-import { useState, useEffect } from "react";
-import { BarChart, User, LogOut, Edit, Trash2 } from "lucide-react";
-import Link from "next/link";
+import { useState, useEffect, useTransition } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { doc, getDoc, setDoc } from "firebase/firestore";
+import { getAuth, onAuthStateChanged, User } from "firebase/auth";
+import { db, app } from "@/lib/firebase";
+import { Loader2, Save, Wand2 } from "lucide-react";
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,183 +18,284 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Separator } from "@/components/ui/separator";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Input } from "@/components/ui/input";
-import { BookingChart } from "@/components/booking-chart";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/hooks/use-toast";
+import {
+  suggestUserPreferences,
+  SuggestUserPreferencesInput,
+  SuggestUserPreferencesOutput,
+} from "@/ai/flows/suggest-user-preferences";
+import { Skeleton } from "@/components/ui/skeleton";
 
-const profileData = {
-  name: "Visitor",
-  email: "visitor@example.com",
-  phone: "123-456-7890",
-  address: "Sikkim, India",
-  avatar: "https://picsum.photos/100",
-};
+const profileSchema = z.object({
+  name: z.string().min(1, "Name is required."),
+  email: z.string().email("Invalid email address."),
+  phone: z.string().optional(),
+  preferences: z.string().optional(),
+});
 
-const bookings = [
-  {
-    name: "Wine Tasting in Tuscany",
-    user: "sgxmrbibek",
-    email: "aryalb652@gmail.com",
-    date: "2027-05-16",
-    image: "https://picsum.photos/40/40?random=1",
-    aiHint: "wine tasting",
-  },
-  {
-    name: "Wine Tasting in Tuscany",
-    user: "dddd",
-    email: "dddd@gmail.com",
-    date: "2024-12-02",
-    image: "https://picsum.photos/40/40?random=2",
-    aiHint: "tuscany landscape",
-  },
-  {
-    name: "European Adventure",
-    user: "triveni",
-    email: "tiru.1310k@gmail.com",
-    date: "2024-06-20",
-    image: "https://picsum.photos/40/40?random=3",
-    aiHint: "european city",
-  },
-];
+type ProfileFormValues = z.infer<typeof profileSchema>;
 
-export default function ProfilePage() {
-  return (
-    <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
-      <aside className="col-span-1 flex flex-col gap-8">
-        <Card>
-          <CardContent className="flex flex-col items-center p-6 text-center">
-            <Avatar className="size-24">
-              <AvatarImage src={profileData.avatar} alt={profileData.name} />
-              <AvatarFallback>
-                {profileData.name.charAt(0)}
-              </AvatarFallback>
-            </Avatar>
-          </CardContent>
-          <Separator />
-          <CardContent className="p-6">
-            <h3 className="mb-2 font-semibold">Details</h3>
-            <div className="flex justify-between gap-4">
-              <Button variant="outline" className="w-full border-red-500 text-red-500 hover:border-red-600 hover:text-red-600">
-                <LogOut className="mr-2" /> Log-out
-              </Button>
-              <Button className="w-full">
-                <Edit className="mr-2" /> Edit Profile
-              </Button>
+interface UserProfile {
+  name: string;
+  email: string;
+  phone?: string;
+  preferences?: string;
+}
+
+export default function UserProfilePage() {
+  const { toast } = useToast();
+  const [user, setUser] = useState<User | null>(null);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useTransition();
+  const [isSuggesting, setIsSuggesting] = useTransition();
+
+  const form = useForm<ProfileFormValues>({
+    resolver: zodResolver(profileSchema),
+    defaultValues: {
+      name: "",
+      email: "",
+      phone: "",
+      preferences: "",
+    },
+  });
+
+  useEffect(() => {
+    const auth = getAuth(app);
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      if (currentUser) {
+        setUser(currentUser);
+        const docRef = doc(db, "users", currentUser.uid);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          const profile = docSnap.data() as UserProfile;
+          setUserProfile(profile);
+          form.reset(profile);
+        } else {
+          // If no profile exists, use basic info from auth
+          const profile = {
+            name: currentUser.displayName || "New User",
+            email: currentUser.email || "",
+          };
+          setUserProfile(profile);
+          form.reset(profile);
+        }
+      } else {
+        setUser(null);
+        setUserProfile(null);
+        // Optionally redirect to login page
+      }
+      setIsLoading(false);
+    });
+    return () => unsubscribe();
+  }, [form]);
+
+  const onSubmit = async (values: ProfileFormValues) => {
+    if (!user) return;
+
+    setIsSaving(async () => {
+      try {
+        await setDoc(doc(db, "users", user.uid), values, { merge: true });
+        setUserProfile(values);
+        form.reset(values); // This resets the 'dirty' state
+        toast({
+          title: "Success",
+          description: "Your profile has been saved.",
+        });
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: "Failed to save your profile. Please try again.",
+          variant: "destructive",
+        });
+      }
+    });
+  };
+
+  const handleSuggestPreferences = async () => {
+    const currentValues = form.getValues();
+    const input: SuggestUserPreferencesInput = {
+      currentPreferences: currentValues.preferences || "",
+      userProfile: {
+        name: currentValues.name,
+        email: currentValues.email,
+        phone: currentValues.phone || "",
+      },
+    };
+
+    setIsSuggesting(async () => {
+      try {
+        const result: SuggestUserPreferencesOutput = await suggestUserPreferences(input);
+        form.setValue("preferences", result.suggestedPreferences, { shouldDirty: true });
+        toast({
+          title: "Suggestions Added",
+          description: "AI-powered suggestions have been added to your preferences.",
+        });
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: "Failed to get AI suggestions. Please try again.",
+          variant: "destructive",
+        });
+      }
+    });
+  };
+
+  if (isLoading) {
+    return (
+      <div className="container mx-auto max-w-2xl">
+        <PageHeader title="User Profile" description="Manage your profile information." />
+        <Card className="mt-8">
+          <CardHeader>
+            <Skeleton className="h-8 w-32" />
+            <Skeleton className="h-4 w-48" />
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-10 w-full" />
             </div>
-            <Separator className="my-6" />
-            <div>
-              <h2 className="text-2xl font-bold">Hi {profileData.name}!</h2>
-              <p className="text-muted-foreground">Email: {profileData.email}</p>
-              <p className="text-muted-foreground">Phone: {profileData.phone}</p>
-              <p className="text-muted-foreground">Address: {profileData.address}</p>
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-10 w-full" />
             </div>
-            <Separator className="my-6" />
-            <Button variant="link" className="text-destructive p-0 h-auto">
-              <Trash2 className="mr-2" /> Delete account
-            </Button>
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-10 w-full" />
+            </div>
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-20 w-full" />
+            </div>
+            <Skeleton className="h-10 w-32" />
           </CardContent>
         </Card>
-      </aside>
+      </div>
+    );
+  }
 
-      <main className="col-span-1 md:col-span-2">
-        <Tabs defaultValue="bookings">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="bookings">Bookings</TabsTrigger>
-            <TabsTrigger value="packages">All Packages</TabsTrigger>
-            <TabsTrigger value="users">Users</TabsTrigger>
-            <TabsTrigger value="history">History</TabsTrigger>
-          </TabsList>
-          <TabsContent value="bookings">
-            <Card>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle>Bookings</CardTitle>
-                  <Input
-                    placeholder="Search Username or Email"
-                    className="max-w-sm"
-                  />
-                </div>
-              </CardHeader>
-              <CardContent>
-                <BookingChart />
-                <div className="mt-8">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Package</TableHead>
-                        <TableHead>User</TableHead>
-                        <TableHead>Email</TableHead>
-                        <TableHead>Date</TableHead>
-                        <TableHead>Action</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {bookings.map((booking, index) => (
-                        <TableRow key={index}>
-                          <TableCell className="flex items-center gap-2">
-                            <Avatar className="hidden size-8 sm:flex">
-                              <AvatarImage src={booking.image} alt={booking.name} data-ai-hint={booking.aiHint}/>
-                            </Avatar>
-                            <span>{booking.name}</span>
-                          </TableCell>
-                          <TableCell>{booking.user}</TableCell>
-                          <TableCell>{booking.email}</TableCell>
-                          <TableCell>{booking.date}</TableCell>
-                          <TableCell>
-                            <Button variant="destructive" size="sm">
-                              Cancel
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-          <TabsContent value="packages">
-            <Card>
-              <CardHeader>
-                <CardTitle>All Packages</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p>Package management will be available here.</p>
-              </CardContent>
-            </Card>
-          </TabsContent>
-           <TabsContent value="users">
-            <Card>
-              <CardHeader>
-                <CardTitle>Users</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p>User management will be available here.</p>
-              </CardContent>
-            </Card>
-          </TabsContent>
-          <TabsContent value="history">
-            <Card>
-              <CardHeader>
-                <CardTitle>History</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p>Booking history will be available here.</p>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
-      </main>
+  if (!user) {
+    return (
+      <div className="container mx-auto max-w-2xl text-center">
+         <PageHeader title="Access Denied" description="Please sign in to view your profile." />
+      </div>
+    );
+  }
+
+  return (
+    <div className="container mx-auto max-w-2xl">
+      <PageHeader
+        title="User Profile"
+        description="Manage your profile information and preferences."
+      />
+      <Card className="mt-8">
+        <CardHeader>
+          <CardTitle>Edit Your Profile</CardTitle>
+          <CardDescription>
+            Update your personal details and travel preferences below.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Name</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Your full name" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email</FormLabel>
+                    <FormControl>
+                      <Input type="email" placeholder="Your email address" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="phone"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Phone Number</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Your phone number" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="preferences"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Travel Preferences</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="e.g., Interested in photography, trekking, and local cuisine."
+                        rows={4}
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <div className="flex flex-col sm:flex-row gap-2">
+                 <Button type="submit" disabled={!form.formState.isDirty || isSaving}>
+                   {isSaving ? (
+                     <>
+                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                       Saving...
+                     </>
+                   ) : (
+                     <>
+                       <Save className="mr-2 h-4 w-4" />
+                       Save Changes
+                     </>
+                   )}
+                 </Button>
+                 <Button type="button" variant="outline" onClick={handleSuggestPreferences} disabled={isSuggesting}>
+                   {isSuggesting ? (
+                     <>
+                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                       Generating...
+                     </>
+                   ) : (
+                     <>
+                      <Wand2 className="mr-2 h-4 w-4" />
+                       Suggest Preferences
+                     </>
+                   )}
+                 </Button>
+              </div>
+            </form>
+          </Form>
+        </CardContent>
+      </Card>
     </div>
   );
 }
