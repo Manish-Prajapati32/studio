@@ -54,6 +54,39 @@ const features = [
   },
 ];
 
+const touristPlaces = [
+  {
+    name: "Tsongmo Lake",
+    image: "https://picsum.photos/600/400?random=4",
+    aiHint: "snowy lake"
+  },
+  {
+    name: "Yumthang Valley",
+    image: "https://picsum.photos/600/400?random=5",
+    aiHint: "flower valley"
+  },
+  {
+    name: "Khecheopalri lake",
+    image: "https://picsum.photos/600/400?random=6",
+    aiHint: "sacred lake"
+  },
+  {
+    name: "Tathagata Tsal",
+    image: "https://picsum.photos/600/400?random=7",
+    aiHint: "buddha park"
+  },
+  {
+    name: "Gurudongmar Lake",
+    image: "https://picsum.photos/600/400?random=8",
+    aiHint: "high-altitude lake"
+  },
+  {
+    name: "Triveni Camping",
+    image: "https://picsum.photos/600/400?random=9",
+    aiHint: "river camping"
+  },
+];
+
 export default function DashboardPage() {
   return (
     <div className="flex flex-col gap-8">
@@ -87,8 +120,8 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      <div>
-        <h2 className="mb-6 font-headline text-3xl font-bold text-primary">
+      <div className="py-8">
+        <h2 className="mb-6 font-headline text-3xl font-bold text-primary text-center">
           Explore Our Features
         </h2>
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -113,6 +146,33 @@ export default function DashboardPage() {
                   </Link>
                 </Button>
               </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+      
+      <div className="py-8">
+        <div className="text-center mb-8">
+          <h2 className="font-headline text-3xl font-bold text-primary">Sikkim Tourist Places</h2>
+          <p className="text-muted-foreground mt-2 max-w-3xl mx-auto">
+            Tourism in Sikkim has experienced a boom in recent decades for its astounding views of the mighty Himalayas and the stunning adventures the tourists experience with their visits here. <Link href="#" className="text-destructive font-semibold">Read more .....</Link>
+          </p>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {touristPlaces.map((place) => (
+            <Card key={place.name} className="relative overflow-hidden rounded-lg group">
+              <Image 
+                src={place.image} 
+                alt={place.name} 
+                width={600} 
+                height={400}
+                className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-110"
+                data-ai-hint={place.aiHint}
+              />
+              <div className="absolute inset-0 bg-black/40" />
+              <div className="absolute inset-0 flex items-center justify-center">
+                <h3 className="font-headline text-2xl font-bold text-white drop-shadow-lg">{place.name}</h3>
+              </div>
             </Card>
           ))}
         </div>
