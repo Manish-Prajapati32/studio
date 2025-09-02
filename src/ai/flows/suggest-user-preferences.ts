@@ -12,7 +12,7 @@
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
-export const SuggestUserPreferencesInputSchema = z.object({
+const SuggestUserPreferencesInputSchema = z.object({
   userProfile: z.object({
     name: z.string().describe("The user's name."),
     email: z.string().describe("The user's email."),
@@ -22,7 +22,7 @@ export const SuggestUserPreferencesInputSchema = z.object({
 });
 export type SuggestUserPreferencesInput = z.infer<typeof SuggestUserPreferencesInputSchema>;
 
-export const SuggestUserPreferencesOutputSchema = z.object({
+const SuggestUserPreferencesOutputSchema = z.object({
   suggestedPreferences: z.string().describe('A paragraph of suggested travel preferences, tailored to a traveler interested in Sikkim monasteries.'),
 });
 export type SuggestUserPreferencesOutput = z.infer<typeof SuggestUserPreferencesOutputSchema>;
