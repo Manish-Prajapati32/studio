@@ -21,6 +21,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  CardFooter
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
@@ -156,6 +157,33 @@ const tourPackages = [
     cost: "Starting from Rs 9000/-",
   },
 ];
+
+const otherOffers = [
+  {
+    title: "Sikkim Treks",
+    description: "The Sikkim trek is a once-in-a-lifetime trek allowing a sublime discovery of the unparalleled beauty",
+    image: "https://picsum.photos/600/400?random=13",
+    aiHint: "mountain trekking",
+  },
+  {
+    title: "Sikkim Honeymoon packages",
+    description: "The secretive seclusion offered by Sikkim made it one of our top choices to offer",
+    image: "https://picsum.photos/600/400?random=14",
+    aiHint: "couple sunset",
+  },
+  {
+    title: "Adventure Activities in Sikkim",
+    description: "You are free to unleash your daredevil side with our range of exciting and thrilling",
+    image: "https://picsum.photos/600/400?random=15",
+    aiHint: "river rafting",
+  },
+  {
+    title: "Nearby Tour packages",
+    description: "Our nearby Sikkim tour packages are crafted with great care to explore the unparalleled beauty",
+    image: "https://picsum.photos/600/400?random=16",
+    aiHint: "train station",
+  },
+]
 
 export default function DashboardPage() {
   return (
@@ -306,8 +334,42 @@ export default function DashboardPage() {
           ))}
         </div>
       </div>
+
+       <div className="py-8">
+        <div className="text-center mb-8">
+          <h2 className="font-headline text-3xl font-bold text-primary">Other Interesting Offers in our Tourism Package</h2>
+          <p className="text-muted-foreground mt-2 max-w-3xl mx-auto">
+            This once-in-a-lifetime tour needs to be captivating to ensure the experience is etched in our minds. We are here to curate exclusive tours for you with some enticing offers to have a blissful experience of the unique and rich culture of the region. We assure you that we will make this trip an unforgettable one to Sikkim with all the added comforts and amenities.
+          </p>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+          {otherOffers.map((offer) => (
+            <Card key={offer.title} className="flex flex-col overflow-hidden bg-card transition-shadow hover:shadow-xl">
+               <div className="relative aspect-[4/3] w-full">
+                  <Image
+                    src={offer.image}
+                    alt={offer.title}
+                    fill
+                    className="object-cover"
+                    data-ai-hint={offer.aiHint}
+                  />
+                </div>
+              <CardHeader>
+                <CardTitle className="text-xl font-headline">{offer.title}</CardTitle>
+              </CardHeader>
+              <CardContent className="flex-grow">
+                <p className="text-muted-foreground text-sm">
+                  {offer.description} <Link href="#" className="text-destructive font-semibold">Read More</Link>
+                </p>
+              </CardContent>
+              <CardFooter>
+                 <Button className="w-full bg-yellow-500 hover:bg-yellow-600 text-white">View Details</Button>
+              </CardFooter>
+            </Card>
+          ))}
+        </div>
+      </div>
+
     </div>
   );
 }
-
-    
