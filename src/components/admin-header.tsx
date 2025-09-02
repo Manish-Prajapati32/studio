@@ -28,12 +28,6 @@ export function AdminHeader() {
         </h2>
       </Link>
 
-      <nav className="hidden items-center gap-6 md:flex">
-        <Link href="/dashboard" className="text-sm font-medium text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white">Home</Link>
-        <Link href="#" className="text-sm font-medium text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white">Packages</Link>
-        <Link href="#" className="text-sm font-medium text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white">About</Link>
-      </nav>
-      
       <div className="flex items-center gap-4">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
