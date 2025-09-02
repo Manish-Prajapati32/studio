@@ -203,6 +203,13 @@ const adventureActivities = [
     },
   ];
 
+const whyBookWithUs = [
+  "Our aim is not just to guarantee locations, but we believe in giving a delightful, spectacular journey and experience to all our customers. Hence, we vouch for the utmost customer satisfaction.",
+  "Our travel experience and good knowledge of the place make us a trustworthy tour operator. We are also respected in this arena for our calibre in exhibiting the finer aspects of tourism in Sikkim. With us, you will have the chance to experience Sikkim's raw beauty and its finest side.",
+  "We have curated the entire tour by fusing the local specialists in Sikkim, allowing our customers to immerse in Sikkim's rich heritage and the vibrancy of its culture.",
+];
+
+
 export default function DashboardPage() {
   return (
     <div className="flex flex-col gap-8">
@@ -413,6 +420,20 @@ export default function DashboardPage() {
             </Card>
           ))}
         </div>
+      </div>
+
+      <div className="py-8">
+        <div className="text-center mb-8">
+          <h2 className="font-headline text-3xl font-bold text-primary">Why book Sikkim Tourism with Us?</h2>
+        </div>
+        <ul className="space-y-6 max-w-4xl mx-auto">
+          {whyBookWithUs.map((reason, index) => (
+            <li key={index} className="flex items-start gap-4">
+              <ArrowRight className="size-6 text-primary flex-shrink-0 mt-1" />
+              <p className="text-muted-foreground">{reason}</p>
+            </li>
+          ))}
+        </ul>
       </div>
 
     </div>
