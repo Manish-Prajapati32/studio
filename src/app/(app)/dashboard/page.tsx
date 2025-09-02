@@ -2,14 +2,17 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import Autoplay from "embla-carousel-autoplay";
 import {
   Archive,
   ArrowRight,
   Bot,
+  CalendarDays,
   Globe,
   Languages,
   Map,
   Search,
+  Wallet,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -20,6 +23,13 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
 
 const features = [
   {
@@ -51,6 +61,39 @@ const features = [
     title: "Audio Guides",
     description: "Listen to narrations in multiple languages for an accessible experience.",
     href: "/audio-guide",
+  },
+];
+
+const carouselImages = [
+  {
+    src: "https://picsum.photos/1600/900?random=1",
+    alt: "Sikkim panoramic view",
+    aiHint: "sikkim monastery",
+  },
+  {
+    src: "https://picsum.photos/1600/900?random=2",
+    alt: "Lush green valley in Sikkim",
+    aiHint: "sikkim valley",
+  },
+  {
+    src: "https://picsum.photos/1600/900?random=3",
+    alt: "Snow-capped mountains in Sikkim",
+    aiHint: "sikkim mountains",
+  },
+  {
+    src: "https://picsum.photos/1600/900?random=10",
+    alt: "Sikkim lake mountains",
+    aiHint: "sikkim lake mountains",
+  },
+  {
+    src: "https://picsum.photos/1600/900?random=11",
+    alt: "Winding road mountains",
+    aiHint: "winding road mountains",
+  },
+  {
+    src: "https://picsum.photos/1600/900?random=12",
+    alt: "Buddha statue park",
+    aiHint: "buddha statue park",
   },
 ];
 
@@ -87,20 +130,63 @@ const touristPlaces = [
   },
 ];
 
+const tourPackages = [
+  {
+    title: "North Sikkim Tour Package",
+    image: "https://picsum.photos/600/400?random=10",
+    aiHint: "sikkim lake mountains",
+    duration: "4 Night 5 Days",
+    covering: "Lachen, Lachung, Yumthang, Gurudongmar Lake, Gangtok",
+    cost: "Starting from Rs 9800/-",
+  },
+  {
+    title: "East Sikkim Tour (Silk Route)",
+    image: "https://picsum.photos/600/400?random=11",
+    aiHint: "winding road mountains",
+    duration: "4 Night 5 Days",
+    covering: "Reshikhola, Aritar, Zuluk, Padamchen, Nathang",
+    cost: "Starting from Rs 7500/-",
+  },
+  {
+    title: "Pelling Ravangla Trip",
+    image: "https://picsum.photos/600/400?random=12",
+    aiHint: "buddha statue park",
+    duration: "4 Night 5 Days",
+    covering: "Pelling, Ravangla, Namchi, Buddha Park, Temi Tea Garden",
+    cost: "Starting from Rs 9000/-",
+  },
+];
+
 export default function DashboardPage() {
   return (
     <div className="flex flex-col gap-8">
-      <div className="relative flex h-[60vh] w-full flex-col items-center justify-center overflow-hidden rounded-2xl bg-black/50 shadow-2xl">
-        <Image
-          src="https://picsum.photos/1600/900?random=1"
-          alt="Sikkim panoramic view"
-          fill
-          className="-z-10 object-cover"
-          data-ai-hint="sikkim monastery"
-          priority
-        />
+      <div className="relative h-[60vh] w-full overflow-hidden rounded-2xl">
+        <Carousel
+          opts={{ loop: true }}
+          plugins={[Autoplay({ delay: 2000 })]}
+          className="h-full w-full"
+        >
+          <CarouselContent className="h-full">
+            {carouselImages.map((img, index) => (
+              <CarouselItem key={index}>
+                <div className="relative h-[60vh] w-full">
+                  <Image
+                    src={img.src}
+                    alt={img.alt}
+                    fill
+                    className="-z-10 object-cover"
+                    data-ai-hint={img.aiHint}
+                    priority={index === 0}
+                  />
+                </div>
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+          <CarouselPrevious className="absolute left-4 top-1/2 -translate-y-1/2 transform" />
+          <CarouselNext className="absolute right-4 top-1/2 -translate-y-1/2 transform" />
+        </Carousel>
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-        <div className="z-10 flex flex-col items-center gap-4 text-center text-white">
+        <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-4 text-center text-white">
           <h1 className="font-headline text-5xl font-bold drop-shadow-lg md:text-7xl">
             The Travel Index
           </h1>
@@ -177,6 +263,51 @@ export default function DashboardPage() {
           ))}
         </div>
       </div>
+      <div className="py-8">
+        <div className="text-center mb-8">
+          <h2 className="font-headline text-3xl font-bold text-primary">Sikkim Tour Packages</h2>
+          <p className="text-muted-foreground mt-2 max-w-3xl mx-auto">
+            You are heartily welcome to embark on the excellent Sikkim tour package which will unveil the true beauty of Sikkim in its raw form, with some exhilarating sights of the mighty alpine forests, the marvels of ancient architectural designs on the Buddhist monasteries and the elegance of the panoramic views of the mighty mountain ranges, exhibiting unmatched beauty.
+          </p>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {tourPackages.map((pkg) => (
+            <Card key={pkg.title} className="overflow-hidden bg-card transition-shadow hover:shadow-xl">
+              <CardHeader className="p-4">
+                <CardTitle className="text-xl font-headline text-center">{pkg.title}</CardTitle>
+                <div className="w-24 h-0.5 bg-primary mx-auto" />
+              </CardHeader>
+              <CardContent className="p-4 pt-0 space-y-4">
+                <div className="relative aspect-[3/2] w-full">
+                  <Image
+                    src={pkg.image}
+                    alt={pkg.title}
+                    fill
+                    className="object-cover rounded-md"
+                    data-ai-hint={pkg.aiHint}
+                  />
+                </div>
+                <ul className="space-y-2 text-sm text-muted-foreground">
+                  <li className="flex items-start gap-2">
+                    <CalendarDays className="size-4 mt-0.5 shrink-0 text-primary" />
+                    <span><b>Duration:</b> {pkg.duration}</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Map className="size-4 mt-0.5 shrink-0 text-primary" />
+                    <span><b>Covering:</b> {pkg.covering}</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Wallet className="size-4 mt-0.5 shrink-0 text-primary" />
+                    <span><b>Cost:</b> {pkg.cost}</span>
+                  </li>
+                </ul>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
+
+    
