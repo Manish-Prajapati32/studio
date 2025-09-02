@@ -185,6 +185,24 @@ const otherOffers = [
   },
 ]
 
+const adventureActivities = [
+    {
+      name: "Trekking in Sikkim",
+      image: "https://picsum.photos/600/400?random=17",
+      aiHint: "mountain trekking snow"
+    },
+    {
+      name: "Camping in Sikkim",
+      image: "https://picsum.photos/600/400?random=18",
+      aiHint: "tent night sky"
+    },
+    {
+      name: "Rafting in Sikkim",
+      image: "https://picsum.photos/600/400?random=19",
+      aiHint: "river rafting group"
+    },
+  ];
+
 export default function DashboardPage() {
   return (
     <div className="flex flex-col gap-8">
@@ -365,6 +383,33 @@ export default function DashboardPage() {
               <CardFooter>
                  <Button className="w-full bg-yellow-500 hover:bg-yellow-600 text-white">View Details</Button>
               </CardFooter>
+            </Card>
+          ))}
+        </div>
+      </div>
+
+      <div className="py-8">
+        <div className="text-center mb-8">
+          <h2 className="font-headline text-3xl font-bold text-primary">Adventure Tourism in Sikkim</h2>
+          <p className="text-muted-foreground mt-2 max-w-3xl mx-auto">
+            The thrills of the trekking routes can be enjoyed once you join us in our action-packed activities. We promise to help you experience adventurous trekking in Sikkim on the trails, the pulsating river rafting to give you that sudden adrenaline rush and the wondrous landscapes of the Himalayas, making it a remarkable memory. Escaping into these wonders will need you to plan your trip to Sikkim with us. Places of such adventurous activities include Goecha La Trek, Varsey Nature Trail, Dzongri Trek, Maenam Peak Trek, Phoktey Dara Trek, Teesta Triveni Camping and Rafting and Singalila Top with Phalut Trek.
+          </p>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {adventureActivities.map((activity) => (
+            <Card key={activity.name} className="relative overflow-hidden rounded-lg group">
+              <Image 
+                src={activity.image} 
+                alt={activity.name} 
+                width={600} 
+                height={400}
+                className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-110"
+                data-ai-hint={activity.aiHint}
+              />
+              <div className="absolute inset-0 bg-black/40" />
+              <div className="absolute inset-0 flex items-center justify-center">
+                <h3 className="font-headline text-2xl font-bold text-yellow-400 drop-shadow-lg">{activity.name}</h3>
+              </div>
             </Card>
           ))}
         </div>
