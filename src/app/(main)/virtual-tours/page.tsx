@@ -1,1 +1,1 @@
-// This file is intentionally left empty to resolve a routing conflict.
+// This file is intentionally left blank to resolve a routing conflict.
