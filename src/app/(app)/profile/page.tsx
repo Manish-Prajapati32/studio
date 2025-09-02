@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -30,13 +30,16 @@ import { Camera } from "lucide-react";
 const profileFormSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters."),
   email: z.string().email("Please enter a valid email address."),
-  bio: z.string().max(160, "Bio cannot be longer than 160 characters.").optional(),
+  bio: z
+    .string()
+    .max(160, "Bio cannot be longer than 160 characters.")
+    .optional(),
   preferences: z.string().optional(),
 });
 
 type ProfileFormValues = z.infer<typeof profileFormSchema>;
 
-const initialProfileData: ProfileFormValues = {
+const defaultProfileData: ProfileFormValues = {
   name: "Visitor",
   email: "visitor@example.com",
   bio: "Eager to explore the serene monasteries of Sikkim and capture its beauty.",
@@ -45,7 +48,18 @@ const initialProfileData: ProfileFormValues = {
 
 export default function ProfilePage() {
   const { toast } = useToast();
-  const [profileData, setProfileData] = useState(initialProfileData);
+  const [profileData, setProfileData] = useState<ProfileFormValues>(
+    defaultProfileData
+  );
+
+  useEffect(() => {
+    const savedData = localStorage.getItem("userProfile");
+    if (savedData) {
+      const parsedData = JSON.parse(savedData);
+      setProfileData(parsedData);
+      form.reset(parsedData);
+    }
+  }, []);
 
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileFormSchema),
@@ -54,6 +68,7 @@ export default function ProfilePage() {
   });
 
   function onSubmit(data: ProfileFormValues) {
+    localStorage.setItem("userProfile", JSON.stringify(data));
     setProfileData(data);
     form.reset(data);
     toast({
@@ -76,7 +91,9 @@ export default function ProfilePage() {
                 <div className="relative">
                   <Avatar className="size-24">
                     <AvatarImage src="https://picsum.photos/100" alt="User" />
-                    <AvatarFallback>{profileData.name.charAt(0)}</AvatarFallback>
+                    <AvatarFallback>
+                      {profileData.name?.charAt(0)}
+                    </AvatarFallback>
                   </Avatar>
                   <Button
                     type="button"
@@ -118,7 +135,10 @@ export default function ProfilePage() {
                     <FormItem>
                       <FormLabel>Email Address</FormLabel>
                       <FormControl>
-                        <Input placeholder="your@email.com" {...field} />
+                        <Input
+                          placeholder="your@email.com"
+                          {...field}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -159,7 +179,7 @@ export default function ProfilePage() {
                   </FormItem>
                 )}
               />
-               <Button type="submit">Save Changes</Button>
+              <Button type="submit">Save Changes</Button>
             </CardContent>
           </Card>
         </form>
