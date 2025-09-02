@@ -19,13 +19,11 @@ import { Logo } from "@/components/logo";
 export function Header() {
   return (
     <header className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b bg-background/80 px-4 backdrop-blur-sm md:px-6">
-      <div className="flex items-center gap-2 md:hidden">
-        <SidebarTrigger asChild>
-          <Button variant="ghost" size="icon" className="rounded-full">
-            <Logo className="size-5" />
-          </Button>
-        </SidebarTrigger>
-      </div>
+      <SidebarTrigger asChild className="md:hidden">
+        <Button variant="ghost" size="icon" className="rounded-full">
+          <Logo className="size-5" />
+        </Button>
+      </SidebarTrigger>
 
       <div className="flex w-full items-center justify-end gap-4">
         <DropdownMenu>

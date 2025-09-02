@@ -20,23 +20,14 @@ export default function AppLayout({ children }: { children: ReactNode }) {
     <SidebarProvider>
       <Sidebar>
         <SidebarHeader className="p-4">
-          <div className="flex items-center gap-3">
-            <Button
-              asChild
-              variant="ghost"
-              size="icon"
-              className="size-9 rounded-full"
-            >
-              <Link href="/dashboard">
-                <Logo className="size-6 text-primary" />
-              </Link>
-            </Button>
+          <Link href="/dashboard" className="flex items-center gap-3">
+            <Logo className="size-8 text-primary" />
             <div className="flex flex-col">
               <h2 className="font-headline text-lg font-semibold tracking-tight">
                 Sikkim Serenity
               </h2>
             </div>
-          </div>
+          </Link>
         </SidebarHeader>
         <Separator />
         <SidebarContent className="p-2">
