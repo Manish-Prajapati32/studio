@@ -16,10 +16,10 @@ import {
 } from "@/components/ui/chart"
 
 const chartData = [
-  { time: "15 seconds ago", bookings: 11500 },
-  { time: "38 seconds ago", bookings: 1000 },
-  { time: "1 minute ago", bookings: 8000 },
-  { time: "2 minutes ago", bookings: 2500 },
+  { time: "15 sec ago", bookings: 11500 },
+  { time: "38 sec ago", bookings: 1000 },
+  { time: "1 min ago", bookings: 8000 },
+  { time: "2 min ago", bookings: 2500 },
   { time: "1 week ago", bookings: 3000 },
   { time: "1 month ago", bookings: 3000 },
   { time: "1 month ago ", bookings: 3000 },
@@ -28,22 +28,24 @@ const chartData = [
 const chartConfig = {
   bookings: {
     label: "Bookings",
-    color: "#2563eb",
+    color: "hsl(var(--primary))",
   },
 }
 
 export function BookingChart() {
   return (
-      <ChartContainer config={chartConfig} className="min-h-[200px] w-full">
-        <BarChart accessibilityLayer data={chartData} margin={{ top: 20 }}>
+      <ChartContainer config={chartConfig} className="min-h-[200px] w-full h-full">
+        <BarChart accessibilityLayer data={chartData} margin={{ top: 20, right: 20, left: 20, bottom: 5 }}>
           <CartesianGrid vertical={false} />
           <XAxis
             dataKey="time"
             tickLine={false}
             tickMargin={10}
             axisLine={false}
+            stroke="hsl(var(--muted-foreground))"
+            tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
           />
-          <YAxis domain={[0, 12000]} />
+          <YAxis stroke="hsl(var(--muted-foreground))" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} />
           <ChartTooltip
             cursor={false}
             content={<ChartTooltipContent indicator="dot" />}

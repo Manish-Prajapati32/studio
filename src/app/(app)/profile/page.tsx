@@ -127,14 +127,17 @@ export default function UserProfilePage() {
           setUserProfile(profile);
           form.reset(profile);
         } else {
+          // If no profile exists, create one from auth details
           const profile = {
             name: currentUser.displayName || "New User",
             email: currentUser.email || "",
             phone: currentUser.phoneNumber || "",
-            address: "karnataka, india"
+            address: "karnataka, india" // default value
           };
           setUserProfile(profile);
           form.reset(profile);
+          // Optionally, save this new profile to Firestore
+          await setDoc(doc(db, "users", currentUser.uid), profile);
         }
       } else {
         router.push("/login");
@@ -158,10 +161,15 @@ export default function UserProfilePage() {
   const handleDeleteAccount = async () => {
     if (!user) return;
     const auth = getAuth(app);
+    const currentUser = auth.currentUser;
+    if (!currentUser) return;
     
     try {
-      await deleteDoc(doc(db, "users", user.uid));
-      await deleteUser(user);
+      // First delete Firestore document
+      await deleteDoc(doc(db, "users", currentUser.uid));
+      // Then delete the user
+      await deleteUser(currentUser);
+      
       toast({ title: "Account Deleted", description: "Your account has been permanently deleted." });
       router.push("/signup");
     } catch (error: any) {
@@ -196,7 +204,15 @@ export default function UserProfilePage() {
   if (isLoading) {
     return (
       <div className="container mx-auto p-4">
-        <Skeleton className="h-96 w-full" />
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+            <div className="col-span-1 flex flex-col gap-4">
+                <Skeleton className="h-64 w-full" />
+                <Skeleton className="h-48 w-full" />
+            </div>
+            <div className="col-span-3">
+                 <Skeleton className="h-[500px] w-full" />
+            </div>
+        </div>
       </div>
     );
   }
@@ -207,7 +223,7 @@ export default function UserProfilePage() {
       <div className="col-span-1 flex flex-col gap-4">
         <Card>
           <CardContent className="p-4">
-            <Avatar className="w-full h-auto rounded-lg mb-4">
+            <Avatar className="w-full h-auto rounded-lg mb-4 aspect-square">
               <AvatarImage src="https://picsum.photos/300/300" alt={userProfile?.name} />
               <AvatarFallback>{userProfile?.name?.charAt(0) ?? 'U'}</AvatarFallback>
             </Avatar>
@@ -302,9 +318,9 @@ export default function UserProfilePage() {
         <Card>
             <CardContent className="p-4">
                 <h3 className="text-xl font-bold">Hi {userProfile?.name}!</h3>
-                <p className="text-sm text-muted-foreground">Email: {userProfile?.email}</p>
-                <p className="text-sm text-muted-foreground">Phone: {userProfile?.phone}</p>
-                <p className="text-sm text-muted-foreground">Address: {userProfile?.address}</p>
+                <p className="text-sm text-muted-foreground truncate">Email: {userProfile?.email}</p>
+                <p className="text-sm text-muted-foreground">Phone: {userProfile?.phone || 'N/A'}</p>
+                <p className="text-sm text-muted-foreground">Address: {userProfile?.address || 'N/A'}</p>
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
                     <Button variant="link" className="text-destructive p-0 h-auto mt-4">Delete account</Button>
@@ -330,7 +346,7 @@ export default function UserProfilePage() {
 
       <div className="col-span-1 lg:col-span-3">
         <Tabs defaultValue="bookings" className="w-full">
-          <TabsList className="grid w-full grid-cols-8">
+          <TabsList className="grid w-full grid-cols-3 sm:grid-cols-4 md:grid-cols-7">
             <TabsTrigger value="bookings">Bookings</TabsTrigger>
             <TabsTrigger value="add-packages">Add Packages</TabsTrigger>
             <TabsTrigger value="all-packages">All Packages</TabsTrigger>
@@ -349,7 +365,7 @@ export default function UserProfilePage() {
                     </div>
                 </div>
                 <h3 className="text-lg font-semibold mb-2">Bookings</h3>
-                <div className="w-full h-[200px]">
+                <div className="w-full h-[300px]">
                     <BookingChart />
                 </div>
                 <div className="mt-4 space-y-2">
@@ -360,6 +376,21 @@ export default function UserProfilePage() {
               </CardContent>
             </Card>
           </TabsContent>
+           <TabsContent value="add-packages">
+                <p>Add Packages Content</p>
+           </TabsContent>
+            <TabsContent value="all-packages">
+                <p>All Packages Content</p>
+            </TabsContent>
+            <TabsContent value="users">
+                <p>Users Content</p>
+            </TabsContent>
+            <TabsContent value="payments">
+                <p>Payments Content</p>
+            </TabsContent>
+            <TabsContent value="ratings">
+                <p>Ratings Content</p>
+            </TabsContent>
           <TabsContent value="history">
             <Card className="mt-4">
               <CardHeader>
@@ -399,5 +430,3 @@ export default function UserProfilePage() {
     </div>
   );
 }
-
-    
